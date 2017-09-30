@@ -6,28 +6,30 @@ const Koa = require('koa');
 const app = new Koa();
 
 app.use(async (ctx, next)=>{
-    let stime = new Date().getTime();
-    await next();
-    let etime = new Date().getTime();
-    ctx.response.type = 'text/html';
-    ctx.response.body = '<h1>Hello World!</h1>';
-    console.log( `请求地址：${ctx.path},响应时间：${etime - stime} ms` );
+   if( ctx.request.path === '/' ) {
+       ctx.response.type = 'text/html';
+       ctx.response.body = '<a href="/">index page</a> ' + '<a href="/home">Home page</a> ' + '<a href="/404">404 Not Found</a> ';
+   }else{
+       await next();
+   }
 });
 
+
 app.use(async (ctx,next)=>{
-    console.log('中间件1 doSoming');
-    await next();
-    console.log('中间件1 end');
+    if( ctx.request.path === '/home' ) {
+        ctx.response.type = 'text/html';
+        ctx.response.body = '<a href="/">index page</a> ' + '<a href="/home">Home page</a> ' + '<a href="/404">404 Not Found</a> '
+    }else{
+        await next();
+    }
 });
 app.use(async (ctx,next)=>{
-    console.log('中间件2 doSoming');
-    // await next();
-    console.log('中间件2 end');
-});
-app.use(async (ctx,next)=>{
-    console.log('中间件3 doSoming');
-    await next();
-    console.log('中间件3 end');
+    if( ctx.request.path === '/404' ) {
+        ctx.response.type = 'text/html';
+        ctx.response.body = '<a href="/">index page</a> ' + '<a href="/home">Home page</a> ' + '<a href="/404">404 Not Found</a> '
+    }else{
+        await next();
+    }
 });
 
 
