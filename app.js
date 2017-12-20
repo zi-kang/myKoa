@@ -1,21 +1,36 @@
 const Koa = require('koa')
-const path = require('path')
-const bodyParser = require('koa-bodyparser')
-const nunjucks = require('koa-nunjucks-2')
-
 const app = new Koa()
-const router = require('./router')
+const views = require("koa-views")
+const nunjucks = require('nunjucks')
+const path = require("path")
+const staticFiles = require('koa-static')
+const Router = require('koa-router')()
+const BodyParser = require('koa-bodyparser')
 
-app.use(nunjucks({
-    ext: 'html',
-    path: path.join(__dirname, 'views'),// 指定视图目录
-    nunjucksConfig: {
-        trimBlocks: true // 开启转义 防Xss
+
+const router = require("./route")
+// const middleware = require('./middleware')
+
+
+const nunjucksEnvironment = new nunjucks.Environment(
+    new nunjucks.FileSystemLoader(path.join(__dirname, './views'))
+)
+
+// middleware(app)
+
+app.use(views(path.join(__dirname, '/views'), {
+    options: {
+        nunjucksEnv: nunjucksEnvironment
+    },
+    map: {
+        html: "nunjucks"
     }
-}));
+}))
+app.use(staticFiles(path.resolve(__dirname, "./public")))
 
-app.use(bodyParser())
-router(app)
-app.listen(3000, () => {
-    console.log('server is running at http://localhost:3000')
-})
+app.use(BodyParser())
+app.use(Router.routes()).use(Router.allowedMethods())
+router(Router)
+
+app.listen(3000)
+console.log(`app started at port 3000...`);
